@@ -32,78 +32,127 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
     })
   }
 
+  function statusBadge(status: string) {
+    const label = STATUS_LABEL[status] ?? status
+    if (status === 'connected') {
+      return (
+        <span className="badge badge-ok">
+          <span className="pulse text-[var(--color-ok)]"><span className="dot" style={{ background: 'currentColor' }} /></span>
+          {label}
+        </span>
+      )
+    }
+    if (status === 'connecting') {
+      return <span className="badge badge-warn"><span className="dot" style={{ background: 'currentColor' }} />{label}</span>
+    }
+    return <span className="badge badge-muted"><span className="dot" style={{ background: 'currentColor' }} />{label}</span>
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         <button disabled={atLimit} onClick={() => { setQr(undefined); setError(undefined); setOpen('evolution_byo') }}
-          className="rounded bg-black px-3 py-2 text-white disabled:opacity-40">Conectar instância</button>
-        {atLimit && <span className="self-center text-sm text-amber-600">Limite do plano atingido — faça upgrade.</span>}
+          className="btn btn-primary">Conectar instância</button>
+        {atLimit && <span className="muted text-sm text-[var(--color-warn)]">Limite do plano atingido — faça upgrade.</span>}
       </div>
 
       {open && (
-        <div className="rounded-xl border p-4">
-          <div className="mb-3 flex gap-2">
+        <div className="card p-5 space-y-4">
+          <div className="flex flex-wrap gap-2">
             {(Object.keys(PROVIDER_LABEL) as Provider[]).map((p) => (
               <button key={p} onClick={() => { setQr(undefined); setError(undefined); setOpen(p) }}
-                className={`rounded border px-3 py-1 text-sm ${open === p ? 'bg-gray-900 text-white' : ''}`}>
+                className={`btn btn-sm ${open === p ? 'btn-primary' : 'btn-ghost'}`}>
                 {PROVIDER_LABEL[p]}
               </button>
             ))}
           </div>
 
           {open === 'evolution_byo' && (
-            <form action={(fd) => handle(() => connectByo(fd))} className="grid gap-2 max-w-md">
-              <input name="name" placeholder="Nome (rótulo)" className="rounded border px-3 py-2" />
-              <input name="baseUrl" required placeholder="URL da Evolution (https://...)" className="rounded border px-3 py-2" />
-              <input name="apiKey" required placeholder="API key" className="rounded border px-3 py-2" />
-              <input name="instanceName" required placeholder="Nome da instância na Evolution" className="rounded border px-3 py-2" />
-              <button disabled={pending} className="rounded bg-black py-2 text-white">Validar e conectar</button>
+            <form action={(fd) => handle(() => connectByo(fd))} className="grid max-w-md gap-3">
+              <div>
+                <label className="label">Nome (rótulo)</label>
+                <input name="name" placeholder="Nome (rótulo)" className="input" />
+              </div>
+              <div>
+                <label className="label">URL da Evolution</label>
+                <input name="baseUrl" required placeholder="https://..." className="input" />
+              </div>
+              <div>
+                <label className="label">API key</label>
+                <input name="apiKey" required placeholder="API key" className="input" />
+              </div>
+              <div>
+                <label className="label">Nome da instância na Evolution</label>
+                <input name="instanceName" required placeholder="Nome da instância" className="input" />
+              </div>
+              <button disabled={pending} className="btn btn-primary">Validar e conectar</button>
             </form>
           )}
           {open === 'evolution_managed' && (
-            <form action={(fd) => handle(() => connectManaged(fd))} className="grid gap-2 max-w-md">
-              <input name="name" placeholder="Nome (rótulo)" className="rounded border px-3 py-2" />
-              <button disabled={pending} className="rounded bg-black py-2 text-white">Provisionar e gerar QR</button>
+            <form action={(fd) => handle(() => connectManaged(fd))} className="grid max-w-md gap-3">
+              <div>
+                <label className="label">Nome (rótulo)</label>
+                <input name="name" placeholder="Nome (rótulo)" className="input" />
+              </div>
+              <button disabled={pending} className="btn btn-primary">Provisionar e gerar QR</button>
             </form>
           )}
           {open === 'meta_cloud' && (
-            <form action={(fd) => handle(() => connectMeta(fd))} className="grid gap-2 max-w-md">
-              <input name="name" placeholder="Nome (rótulo)" className="rounded border px-3 py-2" />
-              <input name="phoneNumberId" required placeholder="Phone Number ID" className="rounded border px-3 py-2" />
-              <input name="wabaId" required placeholder="WABA ID" className="rounded border px-3 py-2" />
-              <input name="accessToken" required placeholder="Access token" className="rounded border px-3 py-2" />
-              <button disabled={pending} className="rounded bg-black py-2 text-white">Verificar e conectar</button>
+            <form action={(fd) => handle(() => connectMeta(fd))} className="grid max-w-md gap-3">
+              <div>
+                <label className="label">Nome (rótulo)</label>
+                <input name="name" placeholder="Nome (rótulo)" className="input" />
+              </div>
+              <div>
+                <label className="label">Phone Number ID</label>
+                <input name="phoneNumberId" required placeholder="Phone Number ID" className="input" />
+              </div>
+              <div>
+                <label className="label">WABA ID</label>
+                <input name="wabaId" required placeholder="WABA ID" className="input" />
+              </div>
+              <div>
+                <label className="label">Access token</label>
+                <input name="accessToken" required placeholder="Access token" className="input" />
+              </div>
+              <button disabled={pending} className="btn btn-primary">Verificar e conectar</button>
             </form>
+          )}
+
+          {error && <p className="text-sm text-[var(--color-danger)]">{error}</p>}
+
+          {qr && (
+            <div className="rounded-xl bg-[var(--color-canvas)] p-4">
+              <p className="muted text-sm">Escaneie no WhatsApp (Aparelhos conectados):</p>
+              <div className="mt-3 inline-flex rounded-lg border border-[var(--color-line)] bg-white p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img alt="QR" src={qr.startsWith('data:') ? qr : `data:image/png;base64,${qr}`} className="h-56 w-56" />
+              </div>
+              <div>
+                <button onClick={() => { setOpen(null); setQr(undefined) }} className="btn btn-ghost btn-sm mt-3">Fechar</button>
+              </div>
+            </div>
           )}
         </div>
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      {qr && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600">Escaneie no WhatsApp (Aparelhos conectados):</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img alt="QR" src={qr.startsWith('data:') ? qr : `data:image/png;base64,${qr}`} className="mt-2 h-56 w-56" />
-          <button onClick={() => { setOpen(null); setQr(undefined) }} className="mt-2 rounded border px-3 py-1 text-sm">Fechar</button>
-        </div>
-      )}
-
-      <ul className="divide-y rounded-xl border">
-        {instances.length === 0 && <li className="p-6 text-gray-500">Nenhuma instância. Conecte a primeira acima.</li>}
+      <div className="card divide-y divide-[var(--color-line)]">
+        {instances.length === 0 && <div className="p-6 muted">Nenhuma instância. Conecte a primeira acima.</div>}
         {instances.map((i) => (
-          <li key={i.id} className="flex items-center justify-between p-4">
+          <div key={i.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
             <div>
               <div className="font-medium">{i.name}</div>
-              <div className="text-sm text-gray-600">
-                {PROVIDER_LABEL[i.provider]} · {STATUS_LABEL[i.status] ?? i.status}
-                {i.phone_number ? ` · ${i.phone_number}` : ''}
-                {` · ${i.hourly_limit}/h · ${i.daily_limit}/dia`}
+              <div className="muted mt-1 flex flex-wrap items-center gap-2 text-sm">
+                <span>{PROVIDER_LABEL[i.provider]}</span>
+                <span>·</span>
+                {statusBadge(i.status)}
+                {i.phone_number && <span>· {i.phone_number}</span>}
+                <span>· {i.hourly_limit}/h · {i.daily_limit}/dia</span>
               </div>
             </div>
-            <div className="flex gap-2 text-sm">
-              <button disabled={pending} onClick={() => handle(() => refreshState(i.id))} className="rounded border px-2 py-1 disabled:opacity-40">Atualizar</button>
-              <button disabled={pending} onClick={() => handle(() => disconnectInstance(i.id))} className="rounded border px-2 py-1 disabled:opacity-40">Desconectar</button>
+            <div className="flex flex-wrap gap-2">
+              <button disabled={pending} onClick={() => handle(() => refreshState(i.id))} className="btn btn-ghost btn-sm">Atualizar</button>
+              <button disabled={pending} onClick={() => handle(() => disconnectInstance(i.id))} className="btn btn-ghost btn-sm">Desconectar</button>
               <button disabled={pending} onClick={() => {
                 const to = prompt('Número (E.164, ex: 5511999998888):'); if (!to) return
                 if (i.provider === 'meta_cloud') {
@@ -113,13 +162,13 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
                   const txt = prompt('Texto da mensagem de teste:') ?? 'Teste Super Envio'
                   handle(() => sendTest(i.id, to, txt))
                 }
-              }} className="rounded border px-2 py-1 disabled:opacity-40">Testar</button>
+              }} className="btn btn-ghost btn-sm">Testar</button>
               <button disabled={pending} onClick={() => { if (confirm('Excluir instância?')) handle(() => deleteInstanceAction(i.id)) }}
-                className="rounded border border-red-300 px-2 py-1 text-red-600 disabled:opacity-40">Excluir</button>
+                className="btn btn-danger btn-sm">Excluir</button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }

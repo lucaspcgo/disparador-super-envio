@@ -25,48 +25,54 @@ export function ContactsClient({ contacts, lists }: { contacts: ContactRow[]; li
 
   return (
     <div className="space-y-8">
-      <section className="rounded-xl border p-4">
-        <h2 className="mb-3 font-medium">Importar CSV</h2>
-        <form onSubmit={onImport} className="grid max-w-md gap-2">
-          <input name="csv" type="file" accept=".csv,text/csv" className="text-sm" />
-          <input name="list_name" placeholder="Nome da lista (opcional)" className="rounded border px-3 py-2" />
-          <button disabled={pending} className="rounded bg-black py-2 text-white disabled:opacity-40">Importar</button>
+      <section className="card p-5">
+        <h2 className="mb-3 font-semibold">Importar CSV</h2>
+        <form onSubmit={onImport} className="grid max-w-md gap-3">
+          <div>
+            <label className="label">Arquivo CSV</label>
+            <input name="csv" type="file" accept=".csv,text/csv" className="input pt-2 text-sm" />
+          </div>
+          <div>
+            <label className="label">Nome da lista (opcional)</label>
+            <input name="list_name" placeholder="Nome da lista (opcional)" className="input" />
+          </div>
+          <button disabled={pending} className="btn btn-primary">Importar</button>
         </form>
-        <p className="mt-2 text-xs text-gray-500">Colunas: <code>telefone</code> (obrigatória), <code>nome</code>, e quaisquer outras viram campos personalizados.</p>
-        {msg && <p className="mt-2 text-sm text-gray-700">{msg}</p>}
+        <p className="muted mt-3 text-xs">Colunas: <code>telefone</code> (obrigatória), <code>nome</code>, e quaisquer outras viram campos personalizados.</p>
+        {msg && <p className="mt-2 text-sm">{msg}</p>}
       </section>
 
       <section>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-medium">Listas</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Listas</h2>
           <form action={(fd) => start(async () => { await createList(fd) })} className="flex gap-2">
-            <input name="name" placeholder="Nova lista" className="rounded border px-2 py-1 text-sm" />
-            <button className="rounded border px-2 py-1 text-sm">Criar</button>
+            <input name="name" placeholder="Nova lista" className="input h-9 w-40 text-sm" />
+            <button className="btn btn-ghost btn-sm">Criar</button>
           </form>
         </div>
-        <ul className="divide-y rounded-xl border">
-          {lists.length === 0 && <li className="p-4 text-sm text-gray-500">Nenhuma lista.</li>}
+        <div className="card divide-y divide-[var(--color-line)]">
+          {lists.length === 0 && <div className="p-4 text-sm muted">Nenhuma lista.</div>}
           {lists.map((l) => (
-            <li key={l.id} className="flex items-center justify-between p-3 text-sm">
+            <div key={l.id} className="flex items-center justify-between p-3 text-sm">
               <span>{l.name}</span>
-              <button onClick={() => start(async () => { await deleteList(l.id) })} className="text-red-600">Excluir</button>
-            </li>
+              <button onClick={() => start(async () => { await deleteList(l.id) })} className="btn btn-danger btn-sm">Excluir</button>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium">Contatos ({contacts.length})</h2>
-        <ul className="divide-y rounded-xl border">
-          {contacts.length === 0 && <li className="p-4 text-sm text-gray-500">Nenhum contato ainda. Importe um CSV.</li>}
+        <h2 className="mb-3 font-semibold">Contatos ({contacts.length})</h2>
+        <div className="card divide-y divide-[var(--color-line)]">
+          {contacts.length === 0 && <div className="p-4 text-sm muted">Nenhum contato ainda. Importe um CSV.</div>}
           {contacts.slice(0, 200).map((c) => (
-            <li key={c.id} className="flex items-center justify-between p-3 text-sm">
+            <div key={c.id} className="flex items-center justify-between p-3 text-sm">
               <span>{c.name ?? '—'} · {c.phone}</span>
-              <button onClick={() => start(async () => { await deleteContact(c.id) })} className="text-red-600">Excluir</button>
-            </li>
+              <button onClick={() => start(async () => { await deleteContact(c.id) })} className="btn btn-danger btn-sm">Excluir</button>
+            </div>
           ))}
-        </ul>
-        {contacts.length > 200 && <p className="mt-2 text-xs text-gray-500">Mostrando 200 de {contacts.length}.</p>}
+        </div>
+        {contacts.length > 200 && <p className="muted mt-2 text-xs">Mostrando 200 de {contacts.length}.</p>}
       </section>
     </div>
   )

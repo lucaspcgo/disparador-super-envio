@@ -11,8 +11,8 @@
 ## Global Constraints
 
 - Nome do produto: **Super Envio**. Idioma da UI: **pt-BR**.
-- Projeto Supabase: ref `zolkdsjjrmpsslftfbjw`, URL `https://zolkdsjjrmpsslftfbjw.supabase.co`, região sa-east-1.
-- Publishable key (client): `sb_publishable_uBbwE3woEXQHs7g3NYjXIg_2O68W6OZ`.
+- Projeto Supabase: ref `<SEU_PROJETO_REF>`, URL `https://<SEU_PROJETO_REF>.supabase.co`, região sa-east-1.
+- Publishable key (client): `sb_publishable_<SUA_KEY>`.
 - Migrations aplicadas via ferramenta Supabase MCP `apply_migration` (Docker/CLI local indisponíveis).
 - Todas as tabelas de domínio têm `organization_id` e política **RLS** habilitada. Nenhum enforcement só no cliente.
 - Diretório do app: `super-envio/` dentro da raiz do repositório.
@@ -112,8 +112,8 @@ Run: `cd "/Users/lucaspereira/CRM DISPARADOR/super-envio" && npm i @supabase/sup
 
 `.env.local`:
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://zolkdsjjrmpsslftfbjw.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_uBbwE3woEXQHs7g3NYjXIg_2O68W6OZ
+NEXT_PUBLIC_SUPABASE_URL=https://<SEU_PROJETO_REF>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_<SUA_KEY>
 ```
 `.env.example` (mesmas chaves, valores vazios). Confirmar que `.env*` está no `.gitignore` da raiz.
 
@@ -226,7 +226,7 @@ cd "/Users/lucaspereira/CRM DISPARADOR" && git add -A && git commit -m "feat: cl
 ### Task 3: Schema multi-tenant + RLS (migration)
 
 **Files:**
-- Aplicado via `apply_migration` (MCP) no projeto `zolkdsjjrmpsslftfbjw`
+- Aplicado via `apply_migration` (MCP) no projeto `<SEU_PROJETO_REF>`
 - Create: `super-envio/supabase/migrations/0001_foundation.sql` (cópia versionada do SQL aplicado)
 
 **Interfaces:**
@@ -320,7 +320,7 @@ create policy "memberships_self_insert" on public.memberships for insert with ch
 
 - [ ] **Step 2: Aplicar a migration**
 
-Via ferramenta MCP `apply_migration` (project_id `zolkdsjjrmpsslftfbjw`, name `foundation`, query = SQL acima).
+Via ferramenta MCP `apply_migration` (project_id `<SEU_PROJETO_REF>`, name `foundation`, query = SQL acima).
 
 - [ ] **Step 3: Verificar**
 

@@ -1,5 +1,5 @@
 -- Fase 0: Fundação multi-tenant (organizations / profiles / memberships) + RLS
--- Aplicada no projeto Supabase zolkdsjjrmpsslftfbjw via MCP apply_migration.
+-- Aplicada no projeto Supabase <SEU_PROJETO_REF> via MCP apply_migration.
 
 create type public.member_role as enum ('owner','admin','member');
 

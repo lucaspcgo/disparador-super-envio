@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Produto: **Super Envio**. UI em **pt-BR**. Diretório do app: `super-envio/`.
-- Projeto Supabase: ref `zolkdsjjrmpsslftfbjw`, URL `https://zolkdsjjrmpsslftfbjw.supabase.co`, sa-east-1.
+- Projeto Supabase: ref `<SEU_PROJETO_REF>`, URL `https://<SEU_PROJETO_REF>.supabase.co`, sa-east-1.
 - Migrations aplicadas via MCP `apply_migration` (Docker/CLI local indisponíveis); salvar cópia versionada em `super-envio/supabase/migrations/`. Próximo número: **0003**.
 - **Next.js 16 é breaking vs. treino:** ler `node_modules/next/dist/docs/` antes de codar (AGENTS.md). `cookies()` é async; "middleware" é `proxy` (arquivo `src/proxy.ts`). Server-only: nunca prefixar segredo com `NEXT_PUBLIC_`.
 - Toda tabela de domínio tem `organization_id` + RLS. Enforcement no servidor, nunca só no cliente.
@@ -25,7 +25,7 @@
 
 **Files:**
 - Create: `super-envio/supabase/migrations/0003_instances.sql`
-- Aplicar via MCP `apply_migration` (project_id `zolkdsjjrmpsslftfbjw`, name `instances`).
+- Aplicar via MCP `apply_migration` (project_id `<SEU_PROJETO_REF>`, name `instances`).
 
 **Interfaces:**
 - Consumes: `public.is_org_member(uuid)` (Fase 0), extensão `supabase_vault` (instalada).
@@ -177,7 +177,7 @@ grant  execute on function public.delete_instance(uuid) to authenticated;
 
 - [ ] **Step 2: Aplicar a migration**
 
-Via MCP `apply_migration` — project_id `zolkdsjjrmpsslftfbjw`, name `instances`, query = SQL do Step 1.
+Via MCP `apply_migration` — project_id `<SEU_PROJETO_REF>`, name `instances`, query = SQL do Step 1.
 
 - [ ] **Step 3: Verificar estrutura**
 
@@ -1237,7 +1237,7 @@ Expected: sem erros.
 
 - [ ] **Step 3: Advisors de segurança**
 
-Via MCP `get_advisors` (project_id `zolkdsjjrmpsslftfbjw`, type `security`). Expected: nenhum erro crítico novo referente a `whatsapp_instances` ou às RPCs (search_path fixo + grants restritos já aplicados).
+Via MCP `get_advisors` (project_id `<SEU_PROJETO_REF>`, type `security`). Expected: nenhum erro crítico novo referente a `whatsapp_instances` ou às RPCs (search_path fixo + grants restritos já aplicados).
 
 - [ ] **Step 4: Commit (se algo ajustado)**
 

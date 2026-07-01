@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { InstanceRow } from '@/lib/wa/types'
 
-export { genManagedInstanceName } from './naming'
-
 const COLS =
   'id,organization_id,provider,name,status,phone_number,evolution_instance_name,meta_phone_number_id,meta_waba_id,hourly_limit,daily_limit,warmup_level'
 

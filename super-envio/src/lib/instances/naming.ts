@@ -1,5 +1,7 @@
-// Nome determinístico-curto para instância gerenciada (prefixo do id da org + sufixo aleatório).
+import { randomBytes } from 'node:crypto'
+
+// Nome curto e não-adivinhável para instância gerenciada (CSPRNG): prefixo do id da org + sufixo hex.
 export function genManagedInstanceName(orgId: string): string {
-  const rand = Math.random().toString(36).slice(2, 8)
+  const rand = randomBytes(16).toString('hex').slice(0, 16)
   return `se-${orgId.slice(0, 8)}-${rand}`
 }

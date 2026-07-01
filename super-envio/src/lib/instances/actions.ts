@@ -9,9 +9,14 @@ import {
   EvolutionClient, EvolutionGateway, provisionManagedInstance, deleteManagedInstance,
 } from '@/lib/wa/evolution'
 import { MetaCloudGateway } from '@/lib/wa/meta'
+import { assertPublicHttpUrl } from '@/lib/wa/ssrf'
 import type { ConnState } from '@/lib/wa/types'
 
 type Result = { ok: true; instanceId?: string; state?: ConnState } | { ok: false; error: string }
+
+function toMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e)
+}
 
 async function requireOrg() {
   const org = await getCurrentOrg()
@@ -38,15 +43,21 @@ export async function connectByo(formData: FormData): Promise<Result> {
     const baseUrl = String(formData.get('baseUrl')).replace(/\/+$/, '')
     const apiKey = String(formData.get('apiKey'))
     const instanceName = String(formData.get('instanceName'))
+    await assertPublicHttpUrl(baseUrl) // guard SSRF: rejeita URLs para hosts internos
     const probe = new EvolutionGateway(new EvolutionClient(baseUrl, apiKey), instanceName, 'evolution_byo')
-    const state = await probe.ensureConnection() // lança se creds inválidas
+    let state: ConnState
+    try {
+      state = await probe.ensureConnection()
+    } catch {
+      return { ok: false, error: 'Não foi possível validar a instância Evolution. Verifique a URL, a API key e o nome da instância.' }
+    }
     const id = await createCredential(
       org.id, 'evolution_byo', name, { evolution_instance_name: instanceName }, { baseUrl, apiKey })
     await setState(id, state)
     revalidatePath('/app/instancias')
     return { ok: true, instanceId: id, state }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -63,7 +74,7 @@ export async function connectManaged(formData: FormData): Promise<Result> {
     revalidatePath('/app/instancias')
     return { ok: true, instanceId: id, state: { status: 'connecting', qr } }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -85,7 +96,7 @@ export async function connectMeta(formData: FormData): Promise<Result> {
     revalidatePath('/app/instancias')
     return { ok: true, instanceId: id, state }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -107,7 +118,7 @@ export async function refreshState(instanceId: string): Promise<Result> {
     revalidatePath('/app/instancias')
     return { ok: true, state }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -121,7 +132,7 @@ export async function disconnectInstance(instanceId: string): Promise<Result> {
     revalidatePath('/app/instancias')
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -138,7 +149,7 @@ export async function deleteInstanceAction(instanceId: string): Promise<Result> 
     revalidatePath('/app/instancias')
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }
 
@@ -158,6 +169,6 @@ export async function sendTest(
     }
     return { ok: true }
   } catch (e) {
-    return { ok: false, error: (e as Error).message }
+    return { ok: false, error: toMessage(e) }
   }
 }

@@ -84,9 +84,10 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
               <button onClick={() => setOpen(null)} className="mt-2 rounded border px-3 py-1 text-sm">Fechar</button>
             </div>
           )}
-          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
         </div>
       )}
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <ul className="divide-y rounded-xl border">
         {instances.length === 0 && <li className="p-6 text-gray-500">Nenhuma instância. Conecte a primeira acima.</li>}
@@ -97,12 +98,13 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
               <div className="text-sm text-gray-600">
                 {PROVIDER_LABEL[i.provider]} · {STATUS_LABEL[i.status] ?? i.status}
                 {i.phone_number ? ` · ${i.phone_number}` : ''}
+                {` · ${i.hourly_limit}/h · ${i.daily_limit}/dia`}
               </div>
             </div>
             <div className="flex gap-2 text-sm">
-              <button onClick={() => handle(() => refreshState(i.id))} className="rounded border px-2 py-1">Atualizar</button>
-              <button onClick={() => handle(() => disconnectInstance(i.id))} className="rounded border px-2 py-1">Desconectar</button>
-              <button onClick={() => {
+              <button disabled={pending} onClick={() => handle(() => refreshState(i.id))} className="rounded border px-2 py-1 disabled:opacity-40">Atualizar</button>
+              <button disabled={pending} onClick={() => handle(() => disconnectInstance(i.id))} className="rounded border px-2 py-1 disabled:opacity-40">Desconectar</button>
+              <button disabled={pending} onClick={() => {
                 const to = prompt('Número (E.164, ex: 5511999998888):'); if (!to) return
                 if (i.provider === 'meta_cloud') {
                   const tpl = prompt('Nome do template aprovado:'); if (!tpl) return
@@ -111,9 +113,9 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
                   const txt = prompt('Texto da mensagem de teste:') ?? 'Teste Super Envio'
                   handle(() => sendTest(i.id, to, txt))
                 }
-              }} className="rounded border px-2 py-1">Testar</button>
-              <button onClick={() => { if (confirm('Excluir instância?')) handle(() => deleteInstanceAction(i.id)) }}
-                className="rounded border border-red-300 px-2 py-1 text-red-600">Excluir</button>
+              }} className="rounded border px-2 py-1 disabled:opacity-40">Testar</button>
+              <button disabled={pending} onClick={() => { if (confirm('Excluir instância?')) handle(() => deleteInstanceAction(i.id)) }}
+                className="rounded border border-red-300 px-2 py-1 text-red-600 disabled:opacity-40">Excluir</button>
             </div>
           </li>
         ))}

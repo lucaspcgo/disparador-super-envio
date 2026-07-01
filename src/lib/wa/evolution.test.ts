@@ -52,6 +52,12 @@ describe('EvolutionClient', () => {
     const client = new EvolutionClient('https://ev.example.com', 'BAD')
     await expect(client.connectionState('inst1')).rejects.toThrow(/401/)
   })
+
+  it('bloqueia redirect (3xx) por segurança (anti-SSRF)', async () => {
+    vi.stubGlobal('fetch', mockFetch(() => ({ status: 302, body: {} })))
+    const client = new EvolutionClient('https://ev.example.com', 'K')
+    await expect(client.connectionState('inst1')).rejects.toThrow(/redirect/i)
+  })
 })
 
 describe('EvolutionGateway', () => {

@@ -6,9 +6,14 @@ export class EvolutionClient {
   private async req(method: string, path: string, body?: unknown) {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method,
+      // Não seguir redirects: um host validado poderia redirecionar p/ IP interno (SSRF).
+      redirect: 'manual',
       headers: { apikey: this.apiKey, 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
+    if (res.status >= 300 && res.status < 400) {
+      throw new Error('Evolution API: redirect bloqueado por segurança')
+    }
     if (!res.ok) {
       throw new Error(`Evolution API ${res.status} em ${method} ${path}`)
     }

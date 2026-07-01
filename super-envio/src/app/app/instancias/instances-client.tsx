@@ -75,19 +75,19 @@ export function InstancesClient({ instances, limit }: { instances: InstanceRow[]
               <button disabled={pending} className="rounded bg-black py-2 text-white">Verificar e conectar</button>
             </form>
           )}
-
-          {qr && (
-            <div className="mt-4">
-              <p className="text-sm text-gray-600">Escaneie no WhatsApp (Aparelhos conectados):</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img alt="QR" src={qr.startsWith('data:') ? qr : `data:image/png;base64,${qr}`} className="mt-2 h-56 w-56" />
-              <button onClick={() => setOpen(null)} className="mt-2 rounded border px-3 py-1 text-sm">Fechar</button>
-            </div>
-          )}
         </div>
       )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
+
+      {qr && (
+        <div className="mt-4">
+          <p className="text-sm text-gray-600">Escaneie no WhatsApp (Aparelhos conectados):</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt="QR" src={qr.startsWith('data:') ? qr : `data:image/png;base64,${qr}`} className="mt-2 h-56 w-56" />
+          <button onClick={() => { setOpen(null); setQr(undefined) }} className="mt-2 rounded border px-3 py-1 text-sm">Fechar</button>
+        </div>
+      )}
 
       <ul className="divide-y rounded-xl border">
         {instances.length === 0 && <li className="p-6 text-gray-500">Nenhuma instância. Conecte a primeira acima.</li>}

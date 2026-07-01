@@ -2,6 +2,7 @@ import type { Credential, InstanceRow, WhatsAppGateway } from './types'
 import { EvolutionClient, EvolutionGateway } from './evolution'
 import { MetaCloudGateway } from './meta'
 import { createServiceClient } from '@/lib/supabase/service'
+import { assertPublicHttpUrl } from './ssrf'
 
 export type CredentialLoader = (instanceId: string) => Promise<Credential>
 
@@ -21,6 +22,10 @@ export async function createGateway(
     case 'evolution_byo':
     case 'evolution_managed': {
       const c = cred as { baseUrl: string; apiKey: string }
+      if (row.provider === 'evolution_byo') {
+        // Re-valida o host BYO a cada uso (mitiga DNS-rebinding após a criação).
+        await assertPublicHttpUrl(c.baseUrl)
+      }
       return new EvolutionGateway(
         new EvolutionClient(c.baseUrl, c.apiKey),
         row.evolution_instance_name ?? '',

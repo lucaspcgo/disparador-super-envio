@@ -69,8 +69,15 @@ export async function connectManaged(formData: FormData): Promise<Result> {
     const instanceName = genManagedInstanceName(org.id)
     const { apiKey, qr } = await provisionManagedInstance(instanceName)
     const baseUrl = process.env.EVOLUTION_MANAGED_URL!.replace(/\/+$/, '')
-    const id = await createCredential(
-      org.id, 'evolution_managed', name, { evolution_instance_name: instanceName }, { baseUrl, apiKey })
+    let id: string
+    try {
+      id = await createCredential(
+        org.id, 'evolution_managed', name, { evolution_instance_name: instanceName }, { baseUrl, apiKey })
+    } catch (e) {
+      // Compensa: a instância já foi provisionada no nosso host; remove p/ não vazar recurso.
+      await deleteManagedInstance(instanceName).catch(() => null)
+      throw e
+    }
     revalidatePath('/app/instancias')
     return { ok: true, instanceId: id, state: { status: 'connecting', qr } }
   } catch (e) {
@@ -141,7 +148,8 @@ export async function deleteInstanceAction(instanceId: string): Promise<Result> 
     const row = await getInstance(instanceId)
     if (!row) return { ok: false, error: 'instância não encontrada' }
     if (row.provider === 'evolution_managed' && row.evolution_instance_name) {
-      await deleteManagedInstance(row.evolution_instance_name).catch(() => null)
+      await deleteManagedInstance(row.evolution_instance_name).catch((e) =>
+        console.error('Falha ao remover instância gerenciada no host Evolution (órfã possível):', toMessage(e)))
     }
     const supabase = await createClient()
     const { error } = await supabase.rpc('delete_instance', { p_instance: instanceId })

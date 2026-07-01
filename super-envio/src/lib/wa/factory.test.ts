@@ -13,7 +13,7 @@ const base: InstanceRow = {
 
 describe('createGateway', () => {
   it('evolution_byo → EvolutionGateway', async () => {
-    const gw = await createGateway(base, async () => ({ baseUrl: 'https://ev', apiKey: 'K' }))
+    const gw = await createGateway(base, async () => ({ baseUrl: 'https://8.8.8.8', apiKey: 'K' }))
     expect(gw).toBeInstanceOf(EvolutionGateway)
     expect(gw.provider).toBe('evolution_byo')
   })

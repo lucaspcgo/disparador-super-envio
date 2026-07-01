@@ -13,6 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <nav className="flex gap-4 text-sm text-gray-600">
             <a href="/app">Painel</a>
             <a href="/app/instancias">Instâncias</a>
+            <a href="/app/contatos">Contatos</a>
           </nav>
         </div>
         <div className="flex items-center gap-4 text-sm">

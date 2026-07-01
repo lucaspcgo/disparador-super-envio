@@ -80,11 +80,17 @@ async function setStatus(id: string, status: string): Promise<R> {
   if (error) return { ok: false, error: error.message }
   revalidatePath('/app/campanhas'); return { ok: true }
 }
-export const pauseCampaign = (id: string) => setStatus(id, 'paused')
-export const resumeCampaign = (id: string) => setStatus(id, 'running')
+export async function pauseCampaign(id: string): Promise<R> { return setStatus(id, 'paused') }
+export async function resumeCampaign(id: string): Promise<R> { return setStatus(id, 'running') }
 export async function cancelCampaign(id: string): Promise<R> {
+  // Checa membership via RLS ANTES do update com service-role (que bypassa RLS).
+  const org = await getCurrentOrg(); if (!org) return { ok: false, error: 'sem organização' }
+  const s = await createClient()
+  const { data: c } = await s.from('campaigns').select('id').eq('id', id).maybeSingle()
+  if (!c) return { ok: false, error: 'campanha não encontrada' }
   const svc = createServiceClient()
-  await svc.from('campaign_messages').update({ status: 'failed', error: 'cancelada' }).eq('campaign_id', id).eq('status', 'pending')
+  await svc.from('campaign_messages').update({ status: 'failed', error: 'cancelada' })
+    .eq('campaign_id', id).eq('organization_id', org.id).eq('status', 'pending')
   return setStatus(id, 'canceled')
 }
 export async function deleteCampaign(id: string): Promise<R> {

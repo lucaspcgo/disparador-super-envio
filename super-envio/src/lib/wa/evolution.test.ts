@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { EvolutionClient, EvolutionGateway, mapEvolutionState } from './evolution'
+import { EvolutionClient, EvolutionGateway, mapEvolutionState, provisionManagedInstance, deleteManagedInstance } from './evolution'
 
 function mockFetch(handler: (url: string, init: RequestInit) => { status?: number; body: unknown }) {
   return vi.fn(async (url: string, init: RequestInit = {}) => {
@@ -74,5 +74,60 @@ describe('EvolutionGateway', () => {
   it('sendTemplate lança erro (Evolution não suporta)', async () => {
     const gw = new EvolutionGateway(new EvolutionClient('https://ev', 'K'), 'inst1', 'evolution_byo')
     await expect(gw.sendTemplate('x', 'y', [])).rejects.toThrow(/template/i)
+  })
+})
+
+describe('provisionManagedInstance', () => {
+  afterEach(() => {
+    delete process.env.EVOLUTION_MANAGED_URL
+    delete process.env.EVOLUTION_MANAGED_GLOBAL_KEY
+  })
+
+  it('lança se env do host gerenciado não configurado', async () => {
+    delete process.env.EVOLUTION_MANAGED_URL
+    delete process.env.EVOLUTION_MANAGED_GLOBAL_KEY
+    await expect(provisionManagedInstance('inst1')).rejects.toThrow(/EVOLUTION_MANAGED/)
+  })
+
+  it('cria instância com hash string e retorna apiKey + qr (base64)', async () => {
+    process.env.EVOLUTION_MANAGED_URL = 'https://managed.example.com'
+    process.env.EVOLUTION_MANAGED_GLOBAL_KEY = 'GLOBAL'
+    const fetchMock = mockFetch((url, init) => {
+      expect(url).toBe('https://managed.example.com/instance/create')
+      expect((init.headers as Record<string, string>).apikey).toBe('GLOBAL')
+      return { body: { hash: 'INSTKEY', qrcode: { base64: 'QR1' } } }
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await provisionManagedInstance('inst1')).toEqual({ apiKey: 'INSTKEY', qr: 'QR1' })
+  })
+
+  it('aceita hash como objeto {apikey} e usa code do qr', async () => {
+    process.env.EVOLUTION_MANAGED_URL = 'https://managed.example.com'
+    process.env.EVOLUTION_MANAGED_GLOBAL_KEY = 'GLOBAL'
+    vi.stubGlobal('fetch', mockFetch(() => ({ body: { hash: { apikey: 'INSTKEY2' }, qrcode: { code: 'QRCODE' } } })))
+    expect(await provisionManagedInstance('inst2')).toEqual({ apiKey: 'INSTKEY2', qr: 'QRCODE' })
+  })
+
+  it('lança se a Evolution não retornar apikey', async () => {
+    process.env.EVOLUTION_MANAGED_URL = 'https://managed.example.com'
+    process.env.EVOLUTION_MANAGED_GLOBAL_KEY = 'GLOBAL'
+    vi.stubGlobal('fetch', mockFetch(() => ({ body: { hash: {} } })))
+    await expect(provisionManagedInstance('inst3')).rejects.toThrow(/apikey/i)
+  })
+})
+
+describe('deleteManagedInstance', () => {
+  afterEach(() => {
+    delete process.env.EVOLUTION_MANAGED_URL
+    delete process.env.EVOLUTION_MANAGED_GLOBAL_KEY
+  })
+
+  it('faz DELETE na instância no host gerenciado', async () => {
+    process.env.EVOLUTION_MANAGED_URL = 'https://managed.example.com'
+    process.env.EVOLUTION_MANAGED_GLOBAL_KEY = 'GLOBAL'
+    let called = ''
+    vi.stubGlobal('fetch', mockFetch((url, init) => { called = `${init.method} ${url}`; return { body: {} } }))
+    await deleteManagedInstance('inst1')
+    expect(called).toBe('DELETE https://managed.example.com/instance/delete/inst1')
   })
 })

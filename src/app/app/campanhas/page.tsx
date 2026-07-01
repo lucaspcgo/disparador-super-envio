@@ -8,9 +8,11 @@ export default async function CampanhasPage() {
     listListsForSelect(),
   ])
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">Campanhas</h1>
-      <p className="mb-6 text-sm text-gray-600">{campaigns.length} campanhas</p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="page-title">Campanhas</h1>
+        <p className="muted mt-1">{campaigns.length} campanha{campaigns.length === 1 ? '' : 's'}</p>
+      </div>
       <CampaignsClient campaigns={campaigns} instances={instances} lists={lists} />
     </div>
   )
